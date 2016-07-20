@@ -1,0 +1,141 @@
+-- 统计表行数
+SELECT 'SELECT '''|| A.TABLE_NAME||''' TBNAME,COUNT(1)  FROM '||A.TABLE_NAME||' UNION' from DBA_TABLES A WHERE A.OWNER='JGXT'
+-- 查询回话状态
+
+
+
+-- 杀死回话
+————————————————————————————————————————————————————————————————————————————————————————————————————————————-
+--判断是否包含数字，返回值大于0则包含数字
+SELECT REGEXP_INSTR('ASD','[0-9]+') FROM DUAL
+--判断是周几 返回值就是周几
+select to_char(sysdate-1,'d')-1 from dual;
+
+——————————————————————————————————————————————————————————————————————————————————————————————————————
+-- 查询表空间路径
+select file_name , tablespace_name from dba_data_files;
+C:\ORACLE\PRODUCT\10.2.0\ORADATA\ORCL\SYSAUX01.DBF
+-- 创建表空间
+create tablespace jgxt    datafile 'C:\ORACLE\PRODUCT\10.2.0\ORADATA\ORCL\JGXT.DBF' size 500m   autoextend on  next 50m maxsize 20480m ;
+-- 创建表空间的用户
+create user jgxt identified by jgxt   default tablespace jgxt;
+-- 给用户授权
+grant connect,resource,dba to jgxt;
+——————————————————————————————————————————————————————————————————————————————————————————————————————————
+--判断包含中文
+SELECT NAME_ONE, NAME_TWO FROM TEST WHERE  NAME_ONE <> CONVERT(NAME_ONE, 'ZHS16GBK', 'UTF8');
+SELECT A.SUBJECT_NUM,ASCIISTR(A.SUBJECT_NUM) FROM PRISON_STATUS A WHERE ASCIISTR(SUBJECT_NUM) LIKE '%\%' 
+
+——————————————————————————————————————————————————————————
+--UPDATE 恢复
+--第一步:在v$sqlarea 这视图里面找到你操作那条SQL的时间;
+select r.FIRST_LOAD_TIME,r.* from v$sqlarea r order by r.FIRST_LOAD_TIME desc ;
+--第二步:
+create table t_table_recove --新表
+as
+select * from t_table--你操作的那张表 
+as of timestamp to_timestamp('2010-06-02 11:36:53','yyyy-mm-dd hh24:mi:ss');
+
+_________________________________________________________________________________________-
+drop 恢复
+--查看数据库回收站 
+select object_name,original_name,partition_name,type,ts_name,createtime,droptime from recyclebin; 
+--恢复  
+FLASHBACK TABLE 表名 TO BEFORE DROP; 
+————————————————————————————————————————————————————————————————————————————————————————————----
+
+
+delete恢复
+
+分为两种方法：scn和时间戳两种方法恢复。
+
+一、通过scn恢复删除且已提交的数据
+
+　　1、获得当前数据库的scn号
+
+　　　　select current_scn from v$database; (切换到sys用户或system用户查询) 
+
+　　　　查询到的scn号为：1499223
+
+　　2、查询当前scn号之前的scn
+
+　　　　select * from 表名 as of scn 1499220; (确定删除的数据是否存在，如果存在，则恢复数据；如果不是，则继续缩小scn号)
+
+　　3、恢复删除且已提交的数据
+
+　　　　flashback table 表名 to scn 1499220;
+
+二、通过时间恢复删除且已提交的数据
+
+　　1、查询当前系统时间
+
+　　　　select to_char(sysdate,'yyyy-mm-dd hh24:mi:ss') from dual;
+
+　　2、查询删除数据的时间点的数据
+
+　　　　select * from 表名 as of timestamp to_timestamp('2013-05-29 15:29:00','yyyy-mm-dd hh24:mi:ss');  (如果不是，则继续缩小范围)
+
+　　3、恢复删除且已提交的数据
+
+　　　　flashback table 表名 to timestamp to_timestamp('2013-05-29 15:29:00','yyyy-mm-dd hh24:mi:ss');
+
+　　　　注意：如果在执行上面的语句，出现错误。可以尝试执行 alter table 表名 enable row movement; //允许更改时间戳
+
+——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————-
+-- 查看当前系统下有哪些表
+select * from user_tables;
+-- 查看表的字段相关信息
+select * from user_tab_columns;
+-- 查看表的索引信息
+select * from user_constraints;
+）——————————————————————————————————————————————————————————————————————————————————————————————————
+
+-- 防止字符串被转义 _  使用escape '\' 防止转义
+
+SELECT table_name,t.COLUMN_NAME FROM  all_tab_columns t where T.OWNER='PRAS' AND  t.COLUMN_NAME like '%\_S' escape '\';
+
+——————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+
+
+--SYS 用户创建表空间
+create tablespace pras1
+datafile 'D:\ORACLE\PRODUCT\10.2.0\DB_2\DATABASE\pras1.DBF' size 1000m;
+--SYS创建用户并指定表空间
+create user pras1 identified by pras1 default tablespace pras1 quota 500m on users;
+	
+--sys用户登入数据库授权dba权限
+grant dba to pras1;
+
+
+————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+1：找出所有被锁的对象，定位出哪个回话占用
+select l.session_id,o.owner,o.object_name
+from v$locked_object l,dba_objects o
+where l.object_id=o.object_id
+结果：
+session_id owner object_name
+158	SA	TEST_1
+146	SA	TEST_1
+131	SA	TEST_3
+136	SA	TEST_2
+对比想要创建的索引，定位哪些会话需要被删除
+2：找出所有照成锁的会话
+select t2.username,t2.sid,t2.serial#,t2.logon_time
+from v$locked_object t1,v$session t2
+where t1.session_id=t2.sid order by t2.logon_time;
+结果：
+username  sid  serial# logon_time
+SA	158	15184	2014/12/4 14:55:59
+SA	146	8229	2014/12/4 15:23:22
+SA	136	14314	2014/12/4 16:09:59
+SA	131	54	2014/12/4 16:10:06
+
+
+查询出对应的SQL
+select sql_text from v$sqlarea a,v$session b where a.SQL_ID=b.PREV_SQL_ID and b.SID=139;
+
+3：kill 所有占用资源的会话
+命令形式：alter system kill session 'sid,serial#';
+占用test_1的资源的会话：
+alter system kill session '158,15184';
+alter system kill session '146 ,8229';

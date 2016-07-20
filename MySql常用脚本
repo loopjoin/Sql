@@ -1,0 +1,1671 @@
+
+mysql show columns等show的用法
+
+mysql show columns等show的用法 
+SHOW DATABASES︰列出 MySQL Server上的数据库。
+
+SHOW TABLES [FROM db_name]︰列出数据库中的表。 
+ 
+SHOW TABLE STATUS [FROM db_name]︰列出数据库的表信息，比较详细。
+ 
+SHOW COLUMNS FROM tbl_name [FROM db_name]︰列出表的列信息，同 SHOW FIELDS FROM tbl_name [FROM db_name]，DESCRIBE tbl_name [col_name]。 
+ 
+SHOW FULL COLUMNS FROM tbl_name [FROM db_name]︰列出表的列信息，比较详细，同 SHOW FULL FIELDS FROM tbl_name [FROM db_name]。  www.2cto.com  
+  
+SHOW INDEX FROM tbl_name [FROM db_name]︰列出表的索引信息。
+ 
+SHOW STATUS︰列出 Server 的状态信息。
+ 
+SHOW VARIABLES︰列出 MySQL 系統参数值
+ 
+SHOW PROCESSLIST︰查看当前mysql查询进程
+ 
+SHOW GRANTS FOR user︰列出用户的授权命令
+______________________________________________________-
+MYSQL 常用字符串函数
+
+FIND_IN_SET(str,strlist) 
+假如字符串str 在由N 子链组成的字符串列表strlist 中， 则返回值的范围在 1 到 N 之间（即str在strlist中的位置） 。
+一个字符串列表就是一个由一些被‘,'符号分开的自链组成的字符串。
+
+2：instr()
+
+
+3:like '%%'
+
+4:LOCATE()
+______________________________________________________
+
+修改表名
+
+
+rename table 原表名 to 新表名;
+ 
+
+______________________________________________________________
+
+-- mysql 查看主外键
+
+ SELECT C.TABLE_SCHEMA            拥有者,
+
+           C.REFERENCED_TABLE_NAME  父表名称 ,
+
+           C.REFERENCED_COLUMN_NAME 父表字段 ,
+
+           C.TABLE_NAME             子表名称,
+
+           C.COLUMN_NAME            子表字段,
+
+           C.CONSTRAINT_NAME        约束名,
+
+           T.TABLE_COMMENT          表注释,
+
+           R.UPDATE_RULE            约束更新规则,
+
+           R.DELETE_RULE            约束删除规则
+
+      FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE C
+
+      JOIN INFORMATION_SCHEMA. TABLES T
+
+        ON T.TABLE_NAME = C.TABLE_NAME
+
+      JOIN INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS R
+
+        ON R.TABLE_NAME = C.TABLE_NAME
+
+       AND R.CONSTRAINT_NAME = C.CONSTRAINT_NAME
+
+       AND R.REFERENCED_TABLE_NAME = C.REFERENCED_TABLE_NAME
+
+      WHERE C.REFERENCED_TABLE_NAME IS NOT NULL ;     
+ 
+
+
+————————————————————————————————————————————————————————
+游标语法
+	-- 游标结束标志
+	DECLARE done INT DEFAULT FALSE; 
+	-- 游标
+	DECLARE cur CURSOR FOR SELECT ResidentialAreaID FROM  lsb_mzzlc GROUP BY ResidentialAreaID;
+	-- 将结束标志绑定到游标
+	DECLARE CONTINUE HANDLER FOR NOT FOUND SET done = TRUE;
+	-- 打开游标
+	OPEN cur;
+	-- 开始循环 
+	read_loop:LOOP
+	-- 提取游标的值放在变量中
+	FETCH cur INTO a;
+	-- 声明结束的时候
+		IF done THEN 
+		LEAVE read_loop;
+		END IF ;
+		END LOOP;
+	-- 关闭游标
+	CLOSE cur;
+
+	——————————————————————————————————————
+开启 禁用主外键
+	1、可以使用SET FOREIGN_KEY_CHECKS=0;
+	来禁用外键约束. 
+	2、再用SET FOREIGN_KEY_CHECKS=1;
+	来启动外键约束. 
+	3、查看当前FOREIGN_KEY_CHECKS的值可用如下命令
+	SELECT @@FOREIGN_KEY_CHECKS; 
+————————————————————————————————————————————————————————————————————————————————————————————————————————————————————
+mysql -u root -p -- 登录
+
+show processlist --查看连接数量
+
+____________________________________________
+
+查询一个表有多少列，那些字段
+
+
+TABLE_SCHEMA  :数据库名
+TABLE_NAME： 表名
+
+SELECT TABLE_SCHEMA,column_name FROM information_schema.`COLUMNS` WHERE TABLE_SCHEMA='basedb_bj' AND TABLE_NAME='house';  
+
+-- 查看建表语句；
+SHOW CREATE TABLE 表名;
+
+isnull(expr)
+
+如expr为null，那么isnull()的返回值为1，否则返回值为0。 
+
+删除主键
+alter table table_test drop primary key;
+然后再增加主键
+alter table table_test add primary key(id);
+
+添加INDEX(普通索引) 
+mysql>ALTER TABLE `table_name` ADD INDEX index_name ( `column` ) 
+4.添加FULLTEXT(全文索引) 
+mysql>ALTER TABLE `table_name` ADD FULLTEXT ( `column`) 
+5.添加多列索引 
+mysql>ALTER TABLE `table_name` ADD INDEX index_name ( `column1`, `column2`, `column3` ) 
+
+1.增加一个字段
+ alter table user add COLUMN new1 VARCHAR(20) DEFAULT NULL; //增加一个字段，默认为空
+ alter table user add COLUMN new2 VARCHAR(20) NOT NULL;  //增加一个字段，默认不能为空  www.2cto.com  
+  
+ 2.删除一个字段
+ alter table user DROP COLUMN new2; 　 //删除一个字段
+  
+ 3.修改一个字段
+ alter table user MODIFY new1 VARCHAR(10); 　//修改一个字段的类型
+  
+ alter table user CHANGE new1 new4 int;　 //修改一个字段的名称，此时一定要重新指定该字段的类型
+ 
+判断一个表是否存在字段
+SELECT COUNT(1) FROM information_schema.columns WHERE table_schema='basedb_bj' AND table_name='table_name' AND column_name='';
+
+添加主键，设置自增
+
+alter table `表格名` add column `列名` int not null auto_increment primary key comment '主键' first;    
+
+Alter table tb add primary key(id);
+Alter table tb change id id int(10) not null auto_increment=1;
+
+删除主键
+Alter table tb change id id int(10);//删除自增长
+Alter table tb drop primary key;//删除主建
+
+
+DELETE FROM a;-- 删除表数据
+TRUNCATE TABLE a;  -- 主键归0
+
+DESC lsb_jcsj（表名） --统计有多少字段
+
+
+SHOW DATABASES; -- 查看数据库
+
+SELECT SCHEMA_NAME FROM information_schema.SCHEMATA;
+
+SELECT * FROM information_schema.SCHEMATA;
+
+
+
+
+CREATE DATABASE mydb;  -- 创建数据库
+
+DROP DATABASES mydb;  -- 删除数据库
+
+USE database_name;  --  使用数据库
+
+show create procedure P_DB_htd_013; --查看存储过程
+
+
+SHOW TABLES;     --  查看表
+
+SHOW TABLES FROM test11;
+
+SELECT TABLE_NAME FROM information_schema.TABLES;
+
+SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA='discuz';
+
+SELECT * FROM information_schema.TABLES WHERE TABLE_SCHEMA='discuz';
+
+SELECT * FROM information_schema.TABLES;
+
+SELECT * FROM information_schema.TABLES WHERE TABLE_SCHEMA='test';
+
+SELECT TABLE_NAME FROM information_schema.TABLES WHERE TABLE_SCHEMA='test11';
+
+
+
+
+-- 查看列字段
+
+SHOW COLUMNS FROM test11.actors;
+
+SELECT COLUMN_NAME FROM information_schema.COLUMNS WHERE TABLE_SCHEMA='test11' AND TABLE_NAME='actors';
+
+SELECT * FROM information_schema.COLUMNS WHERE TABLE_SCHEMA='test11' AND TABLE_NAME='actors';
+
+
+
+
+DROP TABLE test_table;   --  删除表结构和所有数据，谨慎操作
+
+
+
+
+DESC test_table;  --   显示表结构
+
+
+
+
+ALTER TABLE test_table ADD COLUMN column_name VARCHAR(10);  -- 增加字段列
+
+ALTER TABLE test_table RENAME test_table1;     --  修改表名
+
+ALTER TABLE test_table DROP COLUMN column_name;  -- 删除字段列
+
+ALTER TABLE test_table MODIFY column_name CHAR(10);  -- 修改字段列类型
+
+ALTER TABLE test_table CHANGE column_name column_name CHAR(10);  --  修改字段列类型
+
+ALTER TABLE test_table CHANGE COLUMN column_name column_name1 CHAR(10);  -- 修改字段列名
+
+
+
+
+
+
+
+
+
+
+INSERT INTO test_table (ren_name,age,gender,birth)
+
+VALUES('张三',24,'男',NOW());
+
+
+
+
+SELECT * FROM test_table;
+
+
+
+
+UPDATE test_table SET 字段='值',字段='值',字段='值' WHERE 字段='值';
+
+
+
+
+DELETE FROM test_table;   -- 删除表里面所有数据
+
+
+
+
+DELETE FROM test_table WHERE sid=1;
+
+
+
+
+SELECT * FROM test_table;
+
+SELECT 1=1 FROM DUAL;  -- 在没有表被引用的情况下，允许您指定DUAL作为一个假的表名
+
+SELECT * FROM test_table WHERE sid=1;
+
+SELECT * FROM test_table WHERE age IS NULL;
+
+SELECT * FROM test_table WHERE age IS NOT NULL;
+
+SELECT ren_name,gender FROM test_table WHERE sid=2;
+
+SELECT * FROM test_table WHERE gender='女' AND birth='2015-08-13';
+
+SELECT * FROM test_table WHERE sid > 3;
+
+SELECT * FROM test_table WHERE gender='女' OR sid < 3;
+
+SELECT * FROM test_table WHERE ren_name LIKE '%s';
+
+SELECT * FROM test_table WHERE ren_name LIKE '___s';   --  %通配(和*类似)，_代表匹配任意一个字符
+
+SELECT * FROM test_table WHERE ren_name LIKE 'a%';
+
+SELECT * FROM test_table WHERE ren_name LIKE '%b%';
+
+SELECT * FROM test_table ORDER BY birth;
+
+SELECT * FROM test_table ORDER BY birth ASC;    -- 升序
+
+SELECT * FROM test_table ORDER BY birth DESC;   -- 降序
+
+
+
+
+
+
+
+SELECT * FROM test_table ORDER BY birth DESC,age;
+
+SELECT * FROM test_table ORDER BY birth DESC,age ASC;
+
+SELECT * FROM test_table ORDER BY birth DESC,age DESC;
+
+
+
+
+SELECT gender,COUNT(gender) FROM test_table GROUP BY gender;
+
+SELECT gender,COUNT(gender) FROM test_table GROUP BY gender HAVING gender='女';  -- having是分组之后再接条件的关键字
+
+-- 上面写法效率低，不如以下语句
+
+SELECT gender,COUNT(gender) FROM test_table WHERE gender='女' GROUP BY gender;
+
+SELECT gender,COUNT(gender) FROM test_table WHERE gender='女';
+
+SELECT COUNT(*) FROM test_table;
+
+SELECT COUNT(sid) FROM test_table;
+
+SELECT COUNT(sid) AS 总数 FROM test_table;
+
+SELECT COUNT(sid) AS counts FROM test_table;
+
+SELECT COUNT(sid) counts FROM test_table;
+
+SELECT t.sid FROM test_table AS t;
+
+SELECT t.sid,t.ren_name FROM test_table t;
+
+SELECT * FROM test_table LIMIT 0,3;
+
+-- select top 2 * from test_table;        -- mysql没有top语句，ms sql server里面使用
+
+
+
+
+
+
+
+-- 聚合函数
+
+SELECT AVG(age) FROM test_table;    -- 平均值
+
+SELECT COUNT(*) FROM test_table;     -- 包含null值
+
+SELECT COUNT(sid) FROM test_table;   -- 不包含null值
+
+SELECT MIN(age) AS 最小值,MAX(age) AS 最大值 FROM test_table;    --  最小最大值
+
+SELECT SUM(age) FROM test_table;     -- 年龄总数
+
+
+
+
+SELECT * FROM test_table;
+
+
+
+
+--  case语句用法
+
+SELECT CASE 1 WHEN 1 THEN '男人' WHEN 2 THEN '女人' END;
+
+SELECT CASE 1 WHEN 1 THEN '男人' WHEN 2 THEN '女人' END AS result;
+
+SELECT CASE 2 WHEN 1 THEN '男人' WHEN 2 THEN '女人' END AS result;
+
+SELECT CASE (SELECT gender FROM test_table WHERE sid = 5) WHEN '男' THEN '男人' WHEN '女' THEN '女人' END AS result;
+
+
+
+
+--  if语句用法，第一个是判断式，为真返回yes，假返回no
+
+SELECT IF(1>2,'yes','no');
+
+
+
+
+--  ifnull，如果第一个值不为空，则返回第一个值，为空则返回第二个值
+
+SELECT IFNULL('bushikong',2);
+
+SELECT IFNULL(NULL,2);
+
+SELECT IFNULL(NULL,0);
+
+
+
+
+
+
+
+-- 如果两个值相等返回null，不相等返回第一个值
+
+SELECT NULLIF(1,2);
+
+
+
+
+
+
+
+-- 1、CHAR_LENGTH(exp1,exp2) 返回值为字符创的长度，长度的单位为字符，一个汉字也是一个字符。
+
+SELECT CHAR_LENGTH('vince_小白');
+
+SELECT ren_name,CHAR_LENGTH(ren_name) FROM test_table;
+
+
+
+
+-- 2、FORMAT(X,D) 将数字X以四舍五入的方式保留小数点后D位，并将结果以字符创的形式返回。
+
+--  D为0，则返回结果不带小数点，或者不含小数部分。
+
+SELECT FORMAT(1231321.564564,4);
+
+SELECT FORMAT(1231321.564564,5);
+
+SELECT FORMAT(1231321.564564,0);
+
+SELECT FORMAT(1231321.464564,0);
+
+
+
+
+
+
+
+-- 3.insert(str,pos,len,newstr);字符替换，
+
+-- str是原字串，pos起始位置，len替换长度，新的字串
+
+SELECT INSERT('xiaobai is a dog',14,3,'cat');
+
+SELECT INSERT('xiaobai is a dog',14,100,'cat');
+
+
+
+
+-- 4.INSTR(str.substr)返回第一个出现的位置
+
+SELECT INSTR('foobarbar','bar');
+
+
+
+
+-- 5.LEFT/RIGHT   字符串截取，左边几个，右边几个
+
+-- left(str,len)返回从字符串str开始的len最左字符。
+
+SELECT LEFT('foobarbar',5);
+
+
+
+
+-- right(str,len)返回从字符串str开始的len最左字符。
+
+SELECT RIGHT('foobarbar',5);
+
+
+
+
+-- 6.length(srt)返回字符串长度，单位是字节
+
+-- 在mysql里面utf8，一个汉字是3个字节(还要进一步了解)
+
+SELECT LENGTH('vice_小白');
+
+
+
+
+
+
+
+-- 7.LTRIM/RTRIM/TRIM 去空格
+
+SELECT LTRIM('     kjdkfkj   34');
+
+SELECT RTRIM('     kjdkfkj        ');
+
+
+
+
+-- trim(both|leading|trailing "remstr可选指定字符" from 'xxxxxxxxxxzxkldjfkcxxxxxxxxxxxxxxxxxx')
+
+SELECT TRIM(BOTH FROM '    kldjfk    ');
+
+SELECT TRIM(LEADING FROM '    kldjfk    ');
+
+SELECT TRIM(LEADING ' ' FROM '    kldjfk    ');
+
+SELECT TRIM(LEADING 'x' FROM 'xxxxxxxxxxzxkldjfkcxxxxxxxxxxxxxxxxxx');
+
+SELECT TRIM(TRAILING 'x' FROM 'xxxxxxxxxxzxkldjfkcxxxxxxxxxxxxxxxxxx');
+
+SELECT TRIM(BOTH 'x' FROM 'xxxxxxxxxxzxkldjfkcxxxxxxxxxxxxxxxxxx');
+
+
+
+
+
+
+
+-- 8.STRCMP(exp1,exp2)字符串比较
+
+-- 相同返回0，前面小返回-1，前面大返回1
+
+SELECT STRCMP('text','text');
+
+SELECT STRCMP('tex','text');
+
+SELECT STRCMP('text1','text');
+
+
+
+
+
+
+
+-- 9.concat(str1,str2)
+
+-- 返回结果为连接参数产生的字符串。如有任何一个参数为空，则返回为空。
+
+-- 或许有一个或多个参数。如果所有参数均为非二进制字符串，则结果为非二进制字符串。
+
+-- 如果自变量中含有任一二进制字符串，则结果为一个二进制字符串。
+
+-- 一个数字参数被转化为与之相等的二进制字符串搁置；若有避免种种情况，可以使用显示类型cast，
+
+SELECT CONCAT(CAST(int_col AS CHAR),char_col);
+
+SELECT CONCAT('My','S','Q','L');
+
+SELECT CONCAT('My','S',NULL,'L');
+
+SELECT CONCAT('My','S','Q','L',1);  --  系统自动把int 1转换成字符串了
+
+SELECT CONCAT('My','S','Q','L',CAST(1));
+
+SELECT CONCAT(CAST(123 AS CHAR),'My','S','Q','L');-- cast将int转换为字符串
+
+
+
+
+
+
+
+
+
+
+-- substring不带len参数的格式从字符串str返回一个子字符串，起始于位置pos。
+
+-- 带有len参数的格式从字符串str返回一个长度同len字符相同的子字符串，起始于位置pos
+
+-- 使用from的格式为标准的SQL语法。也可能对pos使用一个负值。
+
+-- 假若这样，则子字符串的位置起始于字符串结尾的pos字符，
+
+-- 而不是字符串的开头位置。在一下格式的函数中可以对pos使用一个负值。
+
+-- substring(str,pos);
+
+-- substring(str,from pos);
+
+SUBSTRING(str,pos,len);
+
+SUBSTRING(str FROM pos FOR len);
+
+SELECT SUBSTRING('xiaobai32',4);  -- 从第四个字符串开始截取
+
+SELECT SUBSTRING('xiaobai' FROM 4); --  从第1个字符串开始，截取4个长度。
+
+SELECT SUBSTRING('xiaobai',1,4); --  从第1个字符串开始，截取4个长度。
+
+SELECT SUBSTRING('xiaobai' FROM 1 FOR 4); --  从第1个字符串开始，截取4个长度。
+
+SELECT SUBSTRING('xiaobai',-3);  --  从倒数第3个开始截取
+
+SELECT SUBSTRING('xiaobai',-5,3);  -- 从倒数第五个开始截取3个长度。
+
+SELECT SUBSTRING('xiaobai' FROM -4 FOR 2);  -- 从倒数第4个开始截取2个长度
+
+
+
+
+
+
+
+-- 日期时间函数
+
+SELECT DAYOFWEEK('2015-08-14');  -- 范围1-7,周日=1
+
+SELECT DAYOFYEAR('2015-08-14');
+
+SELECT DAYOFMONTH('2015-08-14');
+
+SELECT DAY('2015-08-14');
+
+
+
+
+SELECT DATE_FORMAT('2015-08-01 12:46:11','%H%i%S') a,DATE_FORMAT('2015-08-01 12:46:11','%H:%i:%S') b,DATE_FORMAT('2015-08-01 12:46:11','%H-%i-%S') c,DATE_FORMAT(NOW(),'%H:%i:%S') d;
+
+SELECT DATE_FORMAT('2015-08-01 12:46:11','%H') a,DATE_FORMAT('2015-08-01 12:46:11','%H') b,DATE_FORMAT('2015-08-01 12:46:11','%H') c,DATE_FORMAT(NOW(),'%H') d;
+
+SELECT SUBSTRING('2015-08-01 12:46:11',12,8);
+
+SELECT DATE_FORMAT('2015-08-01 12:46:11','%H');
+
+
+
+
+SELECT WEEKDAY('2015-08-14');    -- 对应工作日的索引 ，范围0-6， 周一 = 0
+
+SELECT WEEKDAY(NOW());
+
+SELECT YEAR(NOW());
+
+SELECT MONTH(NOW());
+
+
+
+
+SELECT QUARTER(NOW());   --  第几个季度
+
+SELECT HOUR(NOW());
+
+SELECT MINUTE(NOW());
+
+SELECT SECOND(NOW());
+
+
+
+
+SELECT TO_DAYS(NOW());
+
+SELECT TO_DAYS('2016-02-07')-TO_DAYS(NOW());  -- 计算当前时间到过年还有多少天
+
+SELECT FROM_DAYS(700000);
+
+
+
+
+SELECT CURDATE();  -- 当前日期
+
+SELECT CURDATE()+0;  -- 当前日期
+
+SELECT CURTIME();  -- 当前日期
+
+SELECT CURTIME()+0;  -- 当前日期
+
+SELECT NOW();
+
+SELECT NOW()+0;
+
+
+
+
+-- 外键
+
+CREATE TABLE dept
+
+(
+
+ id INT PRIMARY KEY AUTO_INCREMENT,
+
+ ren_name VARCHAR(50) NOT NULL,
+
+ description VARCHAR(100)
+
+);
+
+
+
+
+
+
+
+CREATE TABLE emp
+
+(
+
+ id INT PRIMARY KEY AUTO_INCREMENT,
+
+ ren_name VARCHAR(50) NOT NULL,
+
+ gender CHAR(2) NOT NULL,
+
+ salary FLOAT(10,2),
+
+ age INT(2),
+
+ gmr INT,
+
+ dept_id INT
+
+);
+
+
+
+
+-- 添加外键语法：
+
+[CONSTRAINT symbol] FOREIGN KEY [id](index_col_name,...) 
+
+REFERENCES tbl_name(index_col_name,...)
+
+[ON DELETE {RESTRICT|CASCADE|SET NULL|NO ACTION}]
+
+[ON UPDATE {RESTRICT|CASCADE|SET NULL|NO ACTION}]
+
+
+
+
+-- 外键的使用需要满足下列的条件
+
+-- 1.两张表必须都是InnoDB表，并且它们没有临时表。
+
+-- 2.建立外键关系的对应列必须具有相似的InnoDB内部数据类型。
+
+-- 1.建立外键关系的对应列必须建立了索引。
+
+-- 1.加入显式的给出了CONSTRAINT symbol，那symbol在数据库中必须是唯一的。加入没有显式的给出，InnoDB会自动的创建。
+
+
+
+
+
+
+
+
+
+
+-- 外键是必须创建在从表上面的。
+
+ALTER TABLE emp ADD FOREIGN KEY(dept_id) REFERENCES dept(id);
+
+SHOW CREATE TABLE emp;      -- 通过查看表的定义找出外键的名称
+
+ALTER TABLE emp DROP FOREIGN KEY dept_id;  -- 根据外键名称删除外键
+
+DESC emp;
+
+DELETE FROM dept WHERE id=1;
+
+
+
+
+
+
+
+
+
+
+-- 1.内连接
+
+-- 语法
+
+SELECT ... FROM join_table [INNER] JOIN join_table2 [ON join_condition] WHERE where_definition
+
+-- 只列出这些连接表中与连接条件相匹配的数据行。
+
+
+
+
+SELECT * FROM emp INNER JOIN dept ON emp.dept_id = dept.id;   -- 标准完整写法
+
+SELECT * FROM emp,dept WHERE emp.dept_id = dept.id;           -- 简写
+
+
+
+
+
+
+
+
+
+
+-- 2.外连接
+
+-- 语法
+
+SELECT ... FROM join_table (LEFT|RIGHT|FULL) [OUTER] JOIN join_table2 ON join_condtion WHERE where_definition
+
+-- 不仅列出与连接条件想匹配的行，还列出左表(左外连接)、右表(右外连接)或两个表(全外连接)中所有符合where过滤条件的数据行。
+
+
+
+
+-- 外连接分类
+
+-- 左外连接(left[outer]join)
+
+-- 右外连接(LEFT[OUTER]JOIN)
+
+-- 全外连接(FULL[OUTER]JOIN)
+
+
+
+
+-- 5.1版本MySql暂时还不支持全外连接
+
+
+
+
+-- 左外连接
+
+SELECT * FROM emp LEFT OUTER JOIN dept ON emp.dept_id=dept.id;
+
+SELECT * FROM emp LEFT JOIN dept ON emp.dept_id=dept.id;
+
+
+
+
+-- 右外连接
+
+SELECT * FROM emp RIGHT OUTER JOIN dept ON emp.dept_id=dept.id;
+
+SELECT * FROM emp RIGHT JOIN dept ON emp.dept_id=dept.id;
+
+
+
+
+-- 交叉连接
+
+-- 语法
+
+SELECT ... FROM join_table CROSS JOIN join_table2;
+
+-- 没有on自居和where自居，它返回连接表中所有数据行的笛卡尔积(全交叉集合)
+
+-- 其结果集合中的数据行数等于第一个表中符合查询条件的数据行数乘以第二个表中符合查询条件的数据行数。
+
+-- 相当于 select * from table1,table2; 
+
+SELECT * FROM emp CROSS JOIN dept;
+
+SELECT * FROM emp CROSS JOIN dept CROSS JOIN test_table;
+
+SELECT COUNT(*) FROM emp CROSS JOIN dept CROSS JOIN test_table;
+
+SELECT * FROM emp,dept; 
+
+
+
+
+
+
+
+
+
+
+-- 自连接，参与连接的表都是同一张表。(通过给表取别名虚拟表名)
+
+SELECT e1.ren_name 员工姓名,e2.ren_name 经理姓名 FROM emp e1 LEFT JOIN emp e2 ON e1.gmr = e2.id;
+
+-- 查询出员工姓名和其经理的姓名
+
+
+
+
+
+
+
+SELECT e1.ren_name 经理姓名 FROM emp e1 RIGHT JOIN emp e2 ON e1.id = e2.gmr; -- 查询出所有经理的名字
+
+SELECT e1.ren_name 经理姓名 FROM emp e1 RIGHT JOIN emp e2 ON e1.id = e2.gmr GROUP BY e1.ren_name;  -- 查询出所有经理的名字,并分组去掉重复。
+
+SELECT e1.ren_name 经理姓名 FROM emp e1 RIGHT JOIN emp e2 ON e1.id = e2.gmr WHERE e1.ren_name IS NOT NULL GROUP BY e1.ren_name;  -- 去除重复，并且去掉空值
+
+
+
+
+
+
+
+-- 子查询
+
+-- 某些情况下，当进行查询的时候，需要的条件是另外一个select语句的结果，这个时候就要用到子查询。
+
+-- 为了给主查询(外部查询)提供数据而首先执行的查询(内部查询)被叫做子查询。
+
+-- 用于子查询的关键字主要包括：IN,NOT IN,EXISTS,NOT EXISTS,=,>,<,<>等
+
+-- 一般说子查询的效率低于连接查询。表连接都可以用子查询替换，但是反过来就不一定
+
+--  (就是说连接查询能干的事，子查询全能干，但是子查询能干的事，连接查询不一定能干)
+
+
+
+
+
+
+
+SELECT * FROM emp WHERE salary IN (SELECT salary FROM emp );
+
+SELECT * FROM emp WHERE salary = (SELECT MAX(salary) FROM emp );
+
+SELECT * FROM emp WHERE salary = (SELECT MIN(salary) FROM emp );
+
+SELECT * FROM emp WHERE salary = (SELECT MAX(salary) FROM emp ) OR salary = (SELECT MIN(salary) FROM emp );
+
+
+
+
+SELECT AVG(salary),dept_id FROM emp WHERE dept_id IS NOT NULL GROUP BY dept_id;
+
+SELECT dept.description SELECT dept_id FROM emp WHERE dept_id IS NOT NULL GROUP BY dept_id;
+
+SELECT dept.ren_name,AVG(salary) FROM emp,dept WHERE emp.dept_id IS NOT NULL GROUP BY emp.dept_id;
+
+SELECT emp.ren_name,emp.salary,FROM emp WHERE emp.salary > (SELECT AVG(salary) FROM emp);
+
+
+
+
+
+
+
+-- 索引
+
+-- >,<,>=,<=,<>,in,between,like 'pattern'(pattern不能以通配符开始，%不能放前面，放在前面的话，即使有索引也不会用)
+
+
+
+
+-- 普通索引
+
+-- 这是最基本的索引类型，而且它没有唯一性之类的限制
+
+-- 普通索引可以通过以下一种方式创建：
+
+-- 直接创建
+
+-- 语法
+
+CREATE INDEX 索引名
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- 存储过程和函数介绍
+
+-- 存储过程和函数是实现经过编译并存储在数据库中的一段sql语句的集合。
+
+-- 存储过程和函数的区别：
+
+-- 函数必须有返回值，而存储过程没有。
+
+-- 存储过程的参数可以是in，out，inout类型；函数的参数只能是in。
+
+
+
+
+-- 存储过程的优点：
+
+-- 存储过程只在创建时进行编译，sql语句没执行一次就编译一次，所以使用存储过程可提高数据库执行速度。
+
+-- 简化复杂操作，结合事务仪器封装。
+
+-- 复用性
+
+-- 安全性高，可指定存储过程的使用权。
+
+
+
+
+-- 创建和调用存储过程
+
+-- 用MySql客户端delimiter命令来把语句定界符从;变为//。这就允许用在程序体中的;定界符被传递到服务器而不是被MySql自己来解释。
+
+
+
+
+DELIMITER //
+
+CREATE PROCEDURE 存储过程名(参数列表)
+
+BEGIN
+
+-- 有效的sql语句...
+
+END //
+
+DELIMITER ;
+
+
+
+
+-- 调用
+
+CALL 存储过程名(参数列表)
+
+
+
+
+-- 示例
+
+DELIMITER //
+
+CREATE PROCEDURE proc1(OUT result INT)
+
+BEGIN
+
+	 SELECT COUNT(id) INTO result FROM emp;
+
+END //
+
+
+
+
+DELIMITER ;
+
+-- 调用
+
+CALL proc1(@a);
+
+SELECT @a;
+
+
+
+
+
+
+
+-- 创建和调用函数
+
+-- 创建语法：
+
+-- create function 函数名(参数列表) return 返回值类型
+
+-- [特性...] 函数体
+
+-- 函数的参数形式：参数类型
+
+
+
+
+
+
+
+DELIMITER $$
+
+CREATE FUNCTION 函数名(参数列表) RETURNS 返回值类型
+
+BEGIN
+
+-- 有效的SQL语句...
+
+END $$
+
+
+
+
+DELIMITER ;
+
+
+
+
+-- 示例
+
+DELIMITER $$
+
+CREATE FUNCTION func1(s CHAR(20)) RETURNS CHAR(50)
+
+RETURN CONCAT('hello ',s,' !');
+
+$$
+
+-- 如果上面函数创建出现1418如下错，请执行这个
+
+-- This function has none of DETERMINISTIC, NO SQL, or READS SQL DATA in its declaration and binary logging is enabled (you *might* want to use the less safe log_bin_trust_function_creators variable)
+
+SET GLOBAL log_bin_trust_function_creators=TRUE;
+
+
+
+
+SELECT func1('world');
+
+
+
+
+
+
+
+-- 查看存数过程和函数
+
+-- 语法：
+
+-- 查看存储过程和函数的定义
+
+SHOW CREATE {PROCEDURE|FUNCTION} sp_name;
+
+SHOW CREATE PROCEDURE proc1;
+
+SHOW CREATE FUNCTION func1;
+
+
+
+
+
+
+
+-- 查看存储过程和函数的定义
+
+SHOW {PROCEDURE|FUNCTION} STATUS [LIKE 'pattern'];
+
+SHOW PROCEDURE STATUS LIKE 'proc%';
+
+SELECT * FROM information_schema.ROUTINES;
+
+SELECT * FROM information_schema.ROUTINES WHERE ROUTINE_NAME LIKE 'proc%';
+
+SELECT * FROM information_schema.ROUTINES WHERE ROUTINE_TYPE='PROCEDURE' AND ROUTINE_NAME LIKE 'proc%';
+
+SELECT * FROM information_schema.ROUTINES WHERE ROUTINE_TYPE='PROCEDURE';
+
+SELECT * FROM information_schema.ROUTINES WHERE ROUTINE_TYPE='PROCEDURE' AND ROUTINE_SCHEMA='test11';
+
+
+
+
+SHOW FUNCTION STATUS LIKE 'func1';
+
+SELECT * FROM information_schema.ROUTINES;
+
+SELECT * FROM information_schema.ROUTINES WHERE ROUTINE_NAME LIKE 'func1%';
+
+SELECT * FROM information_schema.ROUTINES WHERE ROUTINE_TYPE='FUNCTION' AND ROUTINE_NAME LIKE 'func1%';
+
+SELECT * FROM information_schema.ROUTINES WHERE ROUTINE_TYPE='FUNCTION';
+
+SELECT * FROM information_schema.ROUTINES WHERE ROUTINE_TYPE='FUNCTION' AND ROUTINE_SCHEMA LIKE 'test%';
+
+SHOW PROCEDURE STATUS;
+
+SHOW FUNCTION STATUS;
+
+
+
+
+SELECT * FROM information_schema.ROUTINES;
+
+
+
+
+-- 删除存储过程和函数
+
+-- 语法：
+
+-- 一次只能删除一个存储过程或者函数
+
+DROP {PROCEDURE|FUNCTION} [IF EXISTS] sp_name;
+
+
+
+
+DROP FUNCTION IF EXISTS func2;
+
+
+
+
+
+
+
+-- 变量的使用
+
+-- 变量的定义
+
+DECLARE 变量名 [,..] 变量类型 [DEFAULT 值]
+
+-- 定义一个局部变量，该变量的作用范围只能在begin......end之中，也可以用在嵌套的块中
+
+-- 变量的定义必须卸载符合语句的开头，并且在任何其它语句的前面
+
+
+
+
+-- 变量的赋值
+
+-- 直接赋值
+
+SET 变量名 = 表达式值或者常量名[,....];
+
+
+
+
+-- 将查询结果赋值给变量(查询返回的结果只能有一行)
+
+SET 列名[,...] INTO 变量名 [,...] FROM 表名 WHERE 条件...
+
+
+
+
+-- 用户变量：是由客户端定义的变量。
+
+-- 声明形式：@变量名
+
+
+
+
+-- 赋值：
+
+SET @变量名 = 表达式值;
+
+SELECT 值 INTO @变量名;
+
+
+
+
+-- @a 这种变量，一个客户端定义的变量不能被其它客户端看到或使用。当客户端退出时，该客户端连接的所有变量将自动释放。
+
+
+
+
+-- 变量的使用示例
+
+DELIMITER //
+
+CREATE PROCEDURE proc2()
+
+BEGIN
+
+	 DECLARE xname VARCHAR(50);
+
+	 DECLARE xdesc VARCHAR(100);
+
+	 SET xname = '财务部';
+
+	 SET xdesc = '发钱的部门';
+
+	 INSERT INTO dept(ren_name,description) VALUES(xname,xdesc);
+
+END //
+
+
+
+
+DELIMITER ;
+
+
+
+
+CALL proc2();
+
+
+
+
+SELECT * FROM dept;
+
+
+
+
+
+
+
+
+
+
+-- 流程控制
+
+-- if语句
+
+-- 语法
+
+IF 条件表达式 THEN
+
+ SQL 语句块
+
+ [ELSEIF 条件表达式2 THEN SQL 语句块2]...
+
+ [ELSE SQL 语句块3]
+
+END IF;
+
+
+
+
+
+
+
+DELIMITER //
+
+CREATE PROCEDURE ifdemo(IN param INT)
+
+BEGIN
+
+	 DECLARE var1 INT;
+
+	 SET var1 = param + 1;
+
+	 IF var1 > 5 THEN 
+
+		 SELECT * FROM emp WHERE ren_name LIKE '%小';
+
+	 ELSE
+
+		 SELECT * FROM emp WHERE ren_name LIKE '威%';
+
+	 END IF
+
+	 ;
+
+END //
+
+DELIMITER ;
+
+CALL ifdemo(69);
+
+
+
+
+-- case语句
+
+CASE 表达式值
+
+ WHEN 值1 THEN sql语句块1
+
+  [WHEN 值1 THEN sql语句块2]...
+
+  [ELSE sql语句块3]
+
+END CASE
+
+
+
+
+
+
+
+
+
+
+DELIMITER //
+
+CREATE PROCEDURE casedemo(IN param INT)
+
+BEGIN
+
+	 CASE param
+
+	 WHEN 1 THEN 
+
+		 UPDATE emp SET salary=salary*1.1;
+
+	 WHEN 2 THEN 
+
+		 UPDATE emp SET salary=salary*1.2;
+
+	 ELSE
+
+		 UPDATE emp SET salary=salary*1.3;
+
+	 END CASE;
+
+END //
+
+
+
+
+DELIMITER ;
+
+CALL casedemo(3);
+
+SELECT * FROM emp;
+
+
+
+
+
+
+
+
+
+
+-- loop语句及跳转
+
+-- loop语句用来实现简单的循环
+
+[开始标注:]LOOP
+
+	 语句块
+
+	 END LOOP[结束标注]
+
+-- 除非“开始标注”存在，否则“结束标注”不能被给出，并且如果两者都出现，它们必须是同样的。
+
+
+
+
+LEAVE label
+
+-- 用于从标注的流程控制构造中退出。它和begin.....end或循环一起被使用。
+
+
+
+
+ITERATE lable
+
+-- 跳过当前循环的剩下的语句，直接进入下一轮循环。
+
+-- ITERATE 只可以出现在LOOP,REPEAT,和WHILE语句内。
+
+
+
+
+
+
+
+DELIMITER //
+
+CREATE PROCEDURE loopdemo(IN param INT)
+
+BEGIN
+
+	 DECLARE su_m INT;
+
+	 SET su_m = 0;
+
+	 label1:LOOP
+
+		 SET param = param + 1;
+
+		 SET su_m = su_m+param;
+
+		 IF param < 10 THEN ITERATE label1;
+
+		 END IF;
+
+	 LEAVE label1;
+
+	 END LOOP label1;
+
+	 SELECT su_m;
+
+END //
+
+
+
+
+DELIMITER ;
+
+
+
+
+CALL loopdemo(1);
+
+
+
+
+
+
+
+
+
+
+-- 触发器
+
+-- 在数据库中为响应一个特殊表格中的某些事件而自动执行的程序代码。
+
+-- 它是在一个特殊的数据库事件，如INSERT.UPDATE或DELETE发生时，自动激活的一段代码。
+
+
+
+
+-- 语法
+
+CREATE TRIGGER 触发器名
+
+{BEFORE|AFTER}
+
+{INSERT|UPDATE|DELETE}
+
+ON 表名 FOR EACH ROW 要出发的sql语句;
+
+
+
+
+-- 使用别名OLD和NEW，能够引用与处罚程序相关的表中的列。
+
+-- OLD.col_name在更新或删除它之前，引用已有行中的一列。
+
+-- NEW.col_name在更新它之后引用将要插入的新行的一列或已有行的一列。
+
+-- 触发器只能定义在永久表上，不能对临时表创建。
+
+-- MySql对同一个表相同出发时间的相同出发时间，只能定义一个触发器。
+
+
+
+
+-- 示例，插入订单明细，更新订单总金额等。
+
+CREATE TABLE orders
+
+(
+
+	 id INT PRIMARY KEY AUTO_INCREMENT,
+
+	 name1 VARCHAR(50),
+
+	 itemcount FLOAT(10,2)
+
+);
+
+
+
+
+CREATE TABLE orderitem
+
+(
+
+	 id INT PRIMARY KEY AUTO_INCREMENT,
+
+	 name1 VARCHAR(50),
+
+	 price FLOAT(10,2),
+
+	 counts INT,
+
+	 oid INT,
+
+	 CONSTRAINT oid FOREIGN KEY(oid) REFERENCES orders(id)
+
+);
+
+
+
+
+
+
+
+DELIMITER //
+
+CREATE TRIGGER total AFTER INSERT ON orderitem FOR EACH ROW
+
+BEGIN
+
+	 DECLARE newid INT DEFAULT 0;
+
+	 DECLARE newprice FLOAT(10,2) DEFAULT 0;
+
+	 DECLARE newcounts INT DEFAULT 0;
+
+	 DECLARE sum1 FLOAT(10,2) DEFAULT 0;
+
+	
+
+	 SELECT oid,price,counts INTO newid,newprice,newcounts FROM orderitem WHERE id=new.id;
+
+	 SET sum1=newprice * newcounts;
+
+	 UPDATE orders SET itemcount = itemcount + sum1 WHERE id = newid;
+
+END //
+
+DELIMITER ;
+
+
+
+
+
+
+
+DELIMITER //
+
+CREATE TRIGGER total1 AFTER UPDATE ON orderitem FOR EACH ROW
+
+BEGIN
+
+	 DECLARE orderid INT DEFAULT 0;
+
+	 DECLARE xprice FLOAT(10,2) DEFAULT 0;
+
+	 DECLARE xcounts INT DEFAULT 0;
+
+	 DECLARE old_sum FLOAT(10,2) DEFAULT 0;
+
+	 DECLARE new_sum FLOAT(10,2) DEFAULT 0;
+
+	
+
+	 SELECT oid,OLD.price,OLD.counts INTO orderid,xprice,xcounts FROM orderitem WHERE id=OLD.id;
+
+	 SET old_sum = xprice * xcounts;
+
+	 SELECT NEW.price,NEW.counts INTO xprice,xcounts FROM orderitem WHERE id = New.id;
+
+	 SET new_sum = xprice * xcounts;
+
+	 UPDATE orders SET itemcount = itemcount + (new_sum - old_sum) WHERE id = orderid;
+
+END //
+
+DELIMITER ;
+
+
+
+
+-- 查看触发器
+
+SHOW TRIGGERS;
+
+SELECT * FROM `information_schema`.`TRIGGERS`;
+
+
+
+
+-- 删除触发器
+
+DROP TRIGGER 触发器名；
+
+
+
+ 
